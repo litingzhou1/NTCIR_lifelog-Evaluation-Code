@@ -1,39 +1,52 @@
-plot-trec_eval
-==============
+# plot-trec_eval
 
-Plotting scripts for trec_eval output. Useful for reporting on IR system evaluations.
+Plotting scripts for trec_eval output. Useful for reporting on IR system
+evaluations.
 
-These require Python (2.6 or 2.7), [NumPy](http://numpy.scipy.org/), and [matplotlib](http://matplotlib.org/).
+These require Python (2.6 or 2.7 or 3.5), 
+[NumPy](http://numpy.scipy.org/), 
+and [matplotlib](http://matplotlib.org/).
 
-###Precision-recall curves
+## Precision-recall curves
 
-Plot precision-recall curves. These show the performance over all topics for ranked retrieval systems.
+Plot precision-recall curves. These show the performance over all topics
+for ranked retrieval systems.
 
-Usage: `python plot_pr_curve.py [-h] [-f OUTFILE] FILE [FILE ...]`
+```
+usage: Plot precision-recall curves. [-h] [-f OUTPUT] files [files ...]
 
-Options:   
-`-h` Show this help message and exit.   
-`-f FILENAME` Save the figure to specified file.   
+positional arguments:
+  files                 Pass multiple files to plot all the runs in the same
+                        plot.
 
-Pass multiple files to plot all the runs in the same plot.
+optional arguments:
+  -h, --help            show this help message and exit
+  -f OUTPUT, --output OUTPUT
+                        Save the figure to specified file.
+```
+### Example
 
-#### Example
+`$ python3 plot_pr_curve.py $(find ./results/*MAP*txt)`
 
-`$ python plot_pr_curve -f pr_curve.pdf indri.eval okapi.eval`
-
-### Per-topic AP or AP difference
+## Per-topic AP or AP difference
 
 Plot AP per topic for 1 run or per-topic difference for 2 runs.
 
-Usage: `python plot_topic_difference.py [-h] [-f OUTFILE] FILE1 [FILE2]`
+```
+usage: Plot AP per topic for 1 run or per-topic difference for 2 runs.
+       [-h] [-f OUTPUT] [-s SORT] files [files ...]
 
-Options:   
-`-h` Show this help message and exit.   
-`-f FILENAME` Save the figure to specified file.   
-`-s` Sort the topics in descending AP/difference.   
+positional arguments:
+  files                 When passing two files the plotted difference is
+                        f1-f2.
 
-When passing two files the plotted difference is FILE1 - FILE2.
+optional arguments:
+  -h, --help            show this help message and exit
+  -f OUTPUT, --output OUTPUT
+                        Save the figure to specified file.
+  -s SORT, --sort SORT  Sort the topics in descending AP/difference.
+```
 
-#### Example
+### Example
 
-`$ python plot_topic_difference -f topic_difference.pdf indri.eval okapi.eval -s`
+`$ python3 plot_topic_ap.py -s true indri.eval okapi.eval`

@@ -1,80 +1,74 @@
 from eval_results import EvaluationResult
 import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
 import numpy as np
-import sys
+import argparse
 import re
 
-def natural_sort(l): 
-    convert = lambda text: int(text) if text.isdigit() else text.lower() 
-    alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ] 
-    return sorted(l, key = alphanum_key)
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
 
-def usage():
-    print "Plot AP per topic for 1 run or per-topic difference for 2 runs."
-    print 
-    print "Usage: python plot_topic_ap.py [-h] [-f OUTFILE] FILE1 [FILE2]"
-    print
-    print "Options:"
-    print "-h Show this help message and exit."
-    print "-f FILENAME Save the figure to specified file."
-    print "-s Sort the topics in descending AP/difference."
-    print
-    print "When passing two files the plotted difference is FILE1 - FILE2."
 
-if "-h" in sys.argv:
-    usage()
-    sys.exit()
+def natural_sort(l):
+    convert = lambda text: int(text) if text.isdigit() else text.lower()
+    alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]
+    return sorted(l, key=alphanum_key)
 
-outfile = 'topic_ap.pdf'
-if "-f" in sys.argv:
-    idx = sys.argv.index("-f")
-    outfile = sys.argv[idx+1]
-    del sys.argv[idx:idx+2]
 
-sort_on_AP = False
-if "-s" in sys.argv:
-    sort_on_AP = True
-    sys.argv.remove("-s")
-
-if len(sys.argv) == 2: #plot single run
-    r = EvaluationResult(sys.argv[1])
+def plot_single(filepath, outfile, sort_on_ap=False):
+    r = EvaluationResult(filepath)
     topic_names = natural_sort(r.queries.keys())
-    AP = np.array([r.queries[q]["map"] for q in topic_names])
-    ylabel = "Average Precision"
-elif len(sys.argv) == 3: #plot two runs
-    r1 = EvaluationResult(sys.argv[1])
-    r2 = EvaluationResult(sys.argv[2])
-    
-    assert all([k in r2.queries for k in r1.queries.keys()]), "Topic set is not the same!"
-    assert all([k in r1.queries for k in r2.queries.keys()]), "Topic set is not the same!"
-    
+    ap = np.array([r.queries[q]['map'] for q in topic_names])
+    ylabel = 'Average Precision'
+
+    plot(ap, ylabel, topic_names, outfile, sort_on_ap)
+
+
+def plot_double(filepath_1, filepath_2, outfile, sort_on_ap=False):
+    r1 = EvaluationResult(filepath_1)
+    r2 = EvaluationResult(filepath_2)
+
+    assert all([k in r2.queries for k in r1.queries.keys()]), 'Topic set is not the same!'
+    assert all([k in r1.queries for k in r2.queries.keys()]), 'Topic set is not the same!'
+
     topic_names = natural_sort(r1.queries.keys())
-    
-    ap1 = np.array([r1.queries[q]["map"] for q in topic_names])
-    ap2 = np.array([r2.queries[q]["map"] for q in topic_names])
-    
-    AP = ap1 - ap2
-    ylabel = "Average Precision difference"
-else: #Not enough/unknown arguments
-    usage()
-    sys.exit()
+
+    ap1 = np.array([r1.queries[q]['map'] for q in topic_names])
+    ap2 = np.array([r2.queries[q]['map'] for q in topic_names])
+
+    ap = ap1 - ap2
+    ylabel = 'Average Precision difference'
+
+    plot(ap, ylabel, topic_names, outfile, sort_on_ap)
 
 
-if sort_on_AP:
-    topic_names = [n for (d,n) in sorted(zip(AP,topic_names), reverse=True)]
-    AP = sorted(AP, reverse=True)
+def plot(ap, ylabel, topic_names, outfile, sort_on_ap=False):
+    if sort_on_ap:
+        topic_names = [n for (d, n) in sorted(zip(ap, topic_names), reverse=True)]
+        ap = sorted(ap, reverse=True)
 
-ind = np.arange(len(topic_names))
-width = 1.0
-rects = plt.bar(ind, AP, width)
-plt.xticks(ind+0.5*width, topic_names, fontsize=10, rotation='vertical')
-plt.ylabel(ylabel)
-plt.xlabel("Topic")
+    ind = np.arange(len(topic_names))
+    width = 1.0
+    plt.bar(ind, ap, width)
+    plt.xticks(ind + 0.5 * width, topic_names, fontsize=10, rotation='vertical')
+    plt.ylabel(ylabel)
+    plt.xlabel('Topic')
 
-plt.savefig(outfile,  bbox_inches='tight')
-
-
+    plt.savefig(outfile, bbox_inches='tight')
 
 
+if __name__ == '__main__':
+    argparser = argparse.ArgumentParser(
+        'Plot AP per topic for 1 run or per-topic difference for 2 runs.')
+    argparser.add_argument('-f', '--output', help='Save the figure to specified file.',
+                           default='topic_ap.pdf')
+    argparser.add_argument('-s', '--sort', help='Sort the topics in descending AP/difference.',
+                           type=bool, required=False, default=False)
+    argparser.add_argument('files',
+                           help='When passing two files the plotted difference is f1-f2.',
+                           type=str, nargs='+')
+
+    args = argparser.parse_args()
+    if len(args.files) > 1:
+        plot_double(args.files[0], args.files[1], args.output, args.sort)
+    else:
+        plot_single(args.files[0], args.output, args.sort)

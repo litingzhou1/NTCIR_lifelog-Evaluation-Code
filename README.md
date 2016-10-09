@@ -12,6 +12,7 @@ and [matplotlib](http://matplotlib.org/).
 Plot precision-recall curves. These show the performance over all topics
 for ranked retrieval systems.
 
+```
 usage: Plot precision-recall curves. [-h] [-f OUTPUT] files [files ...]
 
 positional arguments:
@@ -22,7 +23,7 @@ optional arguments:
   -h, --help            show this help message and exit
   -f OUTPUT, --output OUTPUT
                         Save the figure to specified file.
-
+```
 ### Example
 
 `$ python3 plot_pr_curve.py $(find ./results/*MAP*txt)`
@@ -31,6 +32,7 @@ optional arguments:
 
 Plot AP per topic for 1 run or per-topic difference for 2 runs.
 
+```
 usage: Plot AP per topic for 1 run or per-topic difference for 2 runs.
        [-h] [-f OUTPUT] [-s SORT] files [files ...]
 
@@ -43,6 +45,7 @@ optional arguments:
   -f OUTPUT, --output OUTPUT
                         Save the figure to specified file.
   -s SORT, --sort SORT  Sort the topics in descending AP/difference.
+```
 
 ### Example
 
